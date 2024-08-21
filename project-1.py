@@ -1,6 +1,10 @@
-import cv2
+import cv2 # type: ignore
 
 metodo_deteccion = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+metodo_deteccion_sonrisa = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
+
+metodo_deteccion_ojos = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
 
 # Inicializa la cámara (0 es normalmente la cámara predeterminada)
 camara = cv2.VideoCapture(0)
@@ -20,6 +24,12 @@ while True:
 
     # Recorrer la lista para obtener los valores individuales
     for (x, y, largo, alto) in rostros:
+        # Esto elimina todos los valores que no sean pertenecientes a un rostro
+        region_cara = frame[y:y+alto, x:x+largo]
+        # Esto elimina todos los valores que no sean pertenecientes a un rostro en escala de grises
+        region_cara_gris = imagen_gris[y:y+alto, x:x+largo]
+        # Esto detecta la sonrisa en la región de la cara
+        sonrisa = metodo_deteccion_sonrisa.detectMultiScale(region_cara_gris, scaleFactor=1.7, minNeighbors=5, minSize=(10, 10))
         # Dibuja un rectángulo alrededor de los rostros
         # En donde se va a dibujar el rectángulo
         # La posición en x y del centro del rectangulo
@@ -30,6 +40,10 @@ while True:
         # imprimir un punto rojo en el centro del rectangulo
         cv2.circle(frame, (x + int(largo/2), y + int(alto/2)), 5, (0, 0, 255), -1)
          
+        for(x_, y_, w_, h_) in sonrisa:
+            cv2.rectangle(frame, (x_, y_), (x_+w_, y_+h_), (0, 255, 0), 2)
+        
+
         print(f'''
         La posición en X es: {x}
         La posición en Y es: {y}
